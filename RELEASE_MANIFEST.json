@@ -1,0 +1,84 @@
+{
+  "format": "TPT-GITHUB-RELEASE-1",
+  "product": "Trợ lý Tổng phụ trách Đội THCS",
+  "release": {
+    "version": "3.1.0-rc.1",
+    "channel": "release-candidate",
+    "build_id": "20260814-drive-rc1",
+    "build_date": "2026-08-14",
+    "entrypoint": "index.html",
+    "target": "GitHub Pages / PWA dưới repository subpath"
+  },
+  "data_contract": {
+    "schema_version": 9,
+    "database_name_default": "TPT_DOI_THCS_DB",
+    "app_id_default": "vn.giaoducso40.tpt.thcs.standard",
+    "school_profile_id_default": "thcs-local-profile-001",
+    "app_namespace_default": "tpt_thcs_standard_profile_001",
+    "record_identity": "stable UUID + school/year + revision + device_id + tombstone",
+    "migration": "schema 8 to 9; giữ ID; tạo snapshot bảo vệ"
+  },
+  "teacher_configuration": {
+    "status": "template-requires-setup-before-upload",
+    "tool": "SETUP_CONFIG.html",
+    "required": [
+      "SCHOOL_NAME",
+      "school code",
+      "REPOSITORY_NAME",
+      "GOOGLE_CLIENT_ID",
+      "EXPECTED_GOOGLE_EMAIL_SHA256 or EXPECTED_DRIVE_PERMISSION_ID"
+    ],
+    "forbidden": [
+      "client secret",
+      "access token",
+      "refresh token",
+      "Gmail password",
+      "student or real school records",
+      "backup files"
+    ]
+  },
+  "sync_contract": {
+    "provider": "Google Identity Services + Google Drive API v3",
+    "scope": "https://www.googleapis.com/auth/drive.appdata",
+    "storage": "appDataFolder",
+    "model": "local-first IndexedDB + durable outbox + immutable operation batches + verified snapshots",
+    "token_storage": "memory-only",
+    "conflict_policy": "visible conflict; local/Drive/per-field merge; no silent last-write-wins",
+    "attachment_policy": "UUID + SHA-256; multipart small; resumable above 5 MiB"
+  },
+  "pwa_contract": {
+    "paths": "relative",
+    "routing": "hash",
+    "service_worker_cache": "tpt-doi-thcs-v3-1-0-drive-rc1",
+    "external_requests_intercepted": false,
+    "runtime_data_cached": false
+  },
+  "quality": {
+    "automated_checks": 103,
+    "automated_passed": 103,
+    "automated_failed": 0,
+    "index_sha256": "a6df69245abc9949a40dcef3e548cc2ff1d5c9136dcf94e0184d5bbf842128f4",
+    "original_v1_sha256": "b64798b6e53e2d5dbafc2bac972f3fb2c4a4a2eeda1e231d52152eefb65b8217",
+    "test_report": "TEST_REPORT.md",
+    "open_gates": "LOI_CON_LAI.md",
+    "claim": "RC tự động đạt; chưa nghiệm thu OAuth/Drive/GitHub/browser/thiết bị thật"
+  },
+  "documentation": [
+    "TRUOC_KHI_UPLOAD.md",
+    "README_CAI_DAT_GITHUB.md",
+    "HUONG_DAN_GOOGLE_CLOUD_DRIVE.md",
+    "HUONG_DAN_SU_DUNG_GIAO_VIEN.md",
+    "HUONG_DAN_SAO_LUU_PHUC_HOI.md",
+    "HUONG_DAN_XU_LY_XUNG_DOT.md",
+    "SO_DO_LUU_TRU_DU_LIEU.md",
+    "BAO_CAO_KIEM_TOAN_GITHUB_DRIVE.md",
+    "CHANGELOG.md",
+    "TEST_REPORT.md",
+    "LOI_CON_LAI.md"
+  ],
+  "integrity": {
+    "algorithm": "SHA-256",
+    "file": "CHECKSUMS.txt",
+    "scope": "mọi tệp trong gói ngoại trừ chính CHECKSUMS.txt"
+  }
+}
