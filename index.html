@@ -8143,21 +8143,114 @@
           const c = id ? await db.get("campuses", id) : {};
           openModal(
             id ? "Sửa cơ sở" : "Thêm cơ sở",
-            `<form id="campusForm"><div class="field"><label class="required">Tên cơ sở</label><input name="name" value="${esc(c.name || "")}" required></div><div class="field mt"><label>Mã cơ sở</label><input name="code" value="${esc(c.code || "")}"></div></form>`,
+            `<form id="campusForm"><div class="field"><label class="required">Tên cơ sở</label><input name="name" value="${esc(c.name || "")}" required maxlength="120" placeholder="Ví dụ: Cơ sở 1"></div><div class="field mt"><label class="required">Mã cơ sở</label><input name="code" value="${esc(c.code || "")}" required maxlength="30" pattern="[A-Za-z0-9_-]+" placeholder="Ví dụ: CS1"><span class="hint">Chỉ dùng chữ không dấu, số, dấu gạch ngang hoặc gạch dưới. Mã cơ sở phải duy nhất.</span></div></form>`,
             `<button class="btn" id="cancelCampus">Hủy</button><button class="btn primary" id="saveCampus">Lưu</button>`,
           );
           $("#cancelCampus").onclick = closeModal;
           $("#saveCampus").onclick = async () => {
             const f = $("#campusForm");
             if (!f.reportValidity()) return;
-            await db.put("campuses", {
-              ...c,
-              ...Object.fromEntries(new FormData(f)),
-            });
-            closeModal();
-            await loadContext();
-            toast("Đã lưu cơ sở");
-            renderSettings();
+            const values = Object.fromEntries(new FormData(f)),
+              name = String(values.name || "").trim(),
+              code = String(values.code || "").trim().toUpperCase(),
+              campuses = await db.all("campuses");
+            if (!name || !code) return;
+            if (
+              campuses.some(
+                (row) =>
+                  row.id !== c.id &&
+                  normalizeText(row.name) === normalizeText(name),
+              )
+            )
+              return toast("Tên cơ sở đã tồn tại.", "bad");
+            if (
+              campuses.some(
+                (row) =>
+                  row.id !== c.id &&
+                  String(row.code || "").toUpperCase() === code,
+              )
+            )
+              return toast("Mã cơ sở đã tồn tại.", "bad");
+            const button = $("#saveCampus");
+            button.disabled = true;
+            try {
+              await db.put("campuses", {
+                ...c,
+                id: c.id || uid(),
+                name,
+                code,
+              });
+              closeModal();
+              await loadContext();
+              toast(id ? "Đã cập nhật cơ sở" : "Đã thêm cơ sở");
+              await renderSettingsPanel("context");
+            } catch (error) {
+              button.disabled = false;
+              toast("Không thể lưu cơ sở: " + error.message, "bad");
+            }
+          };
+        }
+        async function deleteCampus(id) {
+          const campuses = await db.all("campuses"),
+            campus = campuses.find((row) => row.id === id);
+          if (!campus) return toast("Không tìm thấy cơ sở.", "bad");
+          if (campuses.length <= 1)
+            return toast("Phải giữ lại ít nhất một cơ sở.", "bad");
+          const referenceStores = [
+              ["classes", "lớp"],
+              ["plans", "kế hoạch"],
+              ["tasks", "công việc"],
+              ["calendar_events", "lịch hoạt động"],
+              ["activities", "hoạt động Đội"],
+              ["criteria_sets", "bộ tiêu chí"],
+              ["weekly_score_sheets", "bảng thi đua"],
+              ["score_entries", "dòng điểm"],
+              ["ranking_snapshots", "bảng xếp hạng"],
+              ["team_units", "đơn vị Đội"],
+              ["training_records", "bản ghi rèn luyện"],
+              ["programs", "phong trào"],
+              ["commendations", "khen thưởng"],
+              ["documents", "hồ sơ"],
+              ["equipment", "thiết bị"],
+              ["generated_reports", "báo cáo"],
+            ],
+            usage = [];
+          for (const [store, label] of referenceStores) {
+            const count = (await db.allIncludingDeleted(store)).filter(
+              (row) => !row.deleted_at && row.campus_id === id,
+            ).length;
+            if (count) usage.push(`${count} ${label}`);
+          }
+          if (usage.length) {
+            openModal(
+              "Chưa thể xóa cơ sở",
+              `<div class="notice warn"><strong>${esc(campus.name)}</strong> đang được dùng bởi ${esc(usage.join(", "))}. Để bảo toàn dữ liệu lịch sử, hãy sửa tên hoặc mã cơ sở; chỉ xóa được cơ sở chưa phát sinh dữ liệu.</div>`,
+              `<button class="btn" id="closeCampusUsage">Đóng</button><button class="btn primary" id="editUsedCampus">Sửa cơ sở</button>`,
+            );
+            $("#closeCampusUsage").onclick = closeModal;
+            $("#editUsedCampus").onclick = () => campusForm(id);
+            return;
+          }
+          openModal(
+            "Xóa cơ sở chưa sử dụng",
+            `<p>Xóa <strong>${esc(campus.name)}</strong> (${esc(campus.code || "không có mã")})?</p><div class="notice warn">Thao tác được lưu vào nhật ký và hàng đợi đồng bộ. Cơ sở đã có dữ liệu liên quan sẽ không được phép xóa.</div>`,
+            `<button class="btn" id="cancelDeleteCampus">Hủy</button><button class="btn danger" id="confirmDeleteCampus">Xóa cơ sở</button>`,
+          );
+          $("#cancelDeleteCampus").onclick = closeModal;
+          $("#confirmDeleteCampus").onclick = async () => {
+            const button = $("#confirmDeleteCampus");
+            button.disabled = true;
+            try {
+              await db.remove("campuses", id);
+              if (state.campusId === id) state.campusId = "all";
+              closeModal();
+              await loadContext();
+              toast("Đã xóa cơ sở chưa sử dụng");
+              await renderSettingsPanel("context");
+            } catch (error) {
+              button.disabled = false;
+              toast("Không thể xóa cơ sở: " + error.message, "bad");
+            }
           };
         }
         function yearForm() {
@@ -9538,8 +9631,15 @@
             ),
             weeks = (await db.all("school_weeks")).filter(
               (row) => row.school_year_id === state.yearId,
-            );
-          panel.innerHTML = `<div class="card"><div class="card-head"><h2>Vòng đời năm học</h2><span class="meta">${years.length} năm</span></div><div class="card-body"><div class="toolbar"><button class="btn primary" id="createAcademicYear">＋ Tạo năm học mới</button><button class="btn" id="closeAcademicYear" ${activeYear?.status === "archived" ? "disabled" : ""}>Đóng năm đang chọn</button></div><div class="notice">Năm đã đóng mặc định chỉ đọc. Muốn hiệu chỉnh phải mở quyền trong phiên và ghi lý do; mọi thao tác được lưu nhật ký.</div><div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Năm học</th><th>Thời gian</th><th>Học kỳ/tuần</th><th>Trạng thái</th><th>Quyền sửa phiên này</th><th>Thao tác</th></tr></thead><tbody>${years
+            ),
+            campuses = await db.all("campuses"),
+            classes = await db.all("classes"),
+            classCountByCampus = classes.reduce((result, row) => {
+              if (row.campus_id)
+                result[row.campus_id] = (result[row.campus_id] || 0) + 1;
+              return result;
+            }, {});
+          panel.innerHTML = `<div class="card"><div class="card-head"><h2>Quản lý cơ sở</h2><span class="meta">${campuses.length} cơ sở</span></div><div class="card-body"><div class="toolbar"><button class="btn primary" id="addCampusCenter">＋ Thêm cơ sở</button></div><div class="notice">Có thể thêm cơ sở mới hoặc sửa tên, mã cơ sở bất cứ lúc nào. Việc đổi tên/mã không làm mất liên kết dữ liệu. Chỉ xóa được cơ sở chưa có lớp hoặc dữ liệu nghiệp vụ.</div><div class="table-wrap" style="max-height:300px"><table><thead><tr><th>TT</th><th>Tên cơ sở</th><th>Mã cơ sở</th><th>Số lớp</th><th>Thao tác</th></tr></thead><tbody>${campuses.map((campus, index) => `<tr><td>${index + 1}</td><td class="wrap"><strong>${esc(campus.name)}</strong></td><td>${esc(campus.code || "—")}</td><td>${Number(classCountByCampus[campus.id] || 0).toLocaleString("vi-VN")}</td><td><div class="row-actions"><button class="link-btn" data-edit-campus="${campus.id}">Sửa</button><button class="link-btn red" data-delete-campus="${campus.id}">Xóa</button></div></td></tr>`).join("") || '<tr><td colspan="5" class="empty">Chưa có cơ sở. Hãy chọn “Thêm cơ sở”.</td></tr>'}</tbody></table></div></div></div><div class="card mt"><div class="card-head"><h2>Vòng đời năm học</h2><span class="meta">${years.length} năm</span></div><div class="card-body"><div class="toolbar"><button class="btn primary" id="createAcademicYear">＋ Tạo năm học mới</button><button class="btn" id="closeAcademicYear" ${activeYear?.status === "archived" ? "disabled" : ""}>Đóng năm đang chọn</button></div><div class="notice">Năm đã đóng mặc định chỉ đọc. Muốn hiệu chỉnh phải mở quyền trong phiên và ghi lý do; mọi thao tác được lưu nhật ký.</div><div class="table-wrap" style="max-height:360px"><table><thead><tr><th>Năm học</th><th>Thời gian</th><th>Học kỳ/tuần</th><th>Trạng thái</th><th>Quyền sửa phiên này</th><th>Thao tác</th></tr></thead><tbody>${years
             .map((year) => {
               const override = state.yearEditOverrides.has(year.id);
               return `<tr><td><strong>${esc(year.name)}</strong>${year.is_current ? " • hiện hành" : ""}</td><td>${fmtDate(year.start_date)} – ${fmtDate(year.end_date)}</td><td>${year.id === state.yearId ? `${semesters.length}/${weeks.length}` : "—"}</td><td>${year.status === "archived" || year.read_only ? '<span class="badge yellow">Đã đóng • chỉ đọc</span>' : '<span class="badge green">Đang mở</span>'}</td><td>${override ? '<span class="badge red">Đang mở sửa có lý do</span>' : "Mặc định"}</td><td>${year.status === "archived" || year.read_only ? `<button class="link-btn" data-year-edit="${year.id}">${override ? "Đóng quyền sửa" : "Mở sửa có lý do"}</button>` : "—"}</td></tr>`;
@@ -9547,6 +9647,15 @@
             .join(
               "",
             )}</tbody></table></div></div></div><div class="grid-2 mt"><div class="card"><div class="card-head"><h2>Quy tắc tạo năm</h2></div><div class="card-body"><ul><li>Tạo mới học kỳ và 40 tuần theo ngày bắt đầu.</li><li>Chỉ sao chép lớp và bộ tiêu chí khi được chọn.</li><li>Không sao chép điểm, xếp hạng, hoạt động, công việc đã phát sinh hay báo cáo cũ.</li></ul></div></div><div class="card"><div class="card-head"><h2>Quy tắc đóng năm</h2></div><div class="card-body"><ul><li>Kiểm tra bảng điểm chưa khóa, việc chưa xong và báo cáo nháp.</li><li>Tạo snapshot bảo vệ, báo cáo tổng kết chốt và gói năm học.</li><li>Sau khi đóng, bản ghi năm cũ chuyển sang chỉ đọc.</li></ul></div></div></div>`;
+          $("#addCampusCenter").onclick = () => campusForm();
+          $$('[data-edit-campus]').forEach(
+            (button) =>
+              (button.onclick = () => campusForm(button.dataset.editCampus)),
+          );
+          $$('[data-delete-campus]').forEach(
+            (button) =>
+              (button.onclick = () => deleteCampus(button.dataset.deleteCampus)),
+          );
           $("#createAcademicYear").onclick = showCreateAcademicYear;
           $("#closeAcademicYear").onclick = () =>
             closeAcademicYear(state.yearId);
