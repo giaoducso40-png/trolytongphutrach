@@ -1218,6 +1218,199 @@
           transition-duration: 0.01ms !important;
         }
       }
+
+      /* Gia cố hiển thị: chỉ điều chỉnh bố cục, không thay đổi nội dung/logic. */
+      html,
+      body,
+      .app,
+      .topbar,
+      .content,
+      .page,
+      .card,
+      .card-head,
+      .card-body,
+      .toolbar,
+      .page-head,
+      .page-actions,
+      .modal,
+      .modal-body {
+        min-width: 0;
+      }
+      .app {
+        min-height: 0;
+        height: 100dvh;
+      }
+      .content {
+        min-height: 0;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+      }
+      .topbar > * {
+        flex-shrink: 0;
+      }
+      .topbar .searchbox {
+        flex-shrink: 1;
+      }
+      #quickAdd {
+        white-space: nowrap;
+      }
+      .status-line {
+        min-width: 0;
+        flex-shrink: 1;
+      }
+      .status-line .dot,
+      .status-line #networkText,
+      .status-line #lockNow {
+        flex-shrink: 0;
+      }
+      .status-line .sync-state {
+        min-width: 0;
+        max-width: 210px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .page-head > div:first-child {
+        flex: 1 1 240px;
+        min-width: 0;
+      }
+      .page-head h1,
+      .card-head h2,
+      .notice,
+      .readonly-banner,
+      .update-banner,
+      .modal-head h2,
+      .modal-body,
+      .kpi .label {
+        overflow-wrap: anywhere;
+      }
+      .card-head {
+        flex-wrap: wrap;
+      }
+      .card-head h2 {
+        min-width: 0;
+      }
+      .card-head .meta {
+        min-width: 0;
+        text-align: right;
+        white-space: normal;
+      }
+      .card-body,
+      .task-card,
+      .kpi,
+      .answer-block,
+      .file-card,
+      .folder-pane,
+      .settings-panel,
+      .assistant-answer {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .toolbar > * {
+        max-width: 100%;
+      }
+      .toolbar input,
+      .toolbar select,
+      .toolbar textarea {
+        min-width: 0;
+      }
+      .tabs {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+      }
+      .tabs button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      .split,
+      .split > * {
+        min-width: 0;
+      }
+      .readonly-banner,
+      .update-banner {
+        flex-wrap: wrap;
+      }
+      .readonly-banner > :first-child,
+      .update-banner > :first-child {
+        flex: 1 1 240px;
+        min-width: 0;
+      }
+      .table-wrap,
+      .score-wrap,
+      .kanban,
+      .settings-menu,
+      .nav,
+      .page-actions,
+      .calendar-grid,
+      .modal-body {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      .modal {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100dvh - 32px);
+        overflow: hidden;
+      }
+      .modal-head,
+      .modal-foot {
+        flex: 0 0 auto;
+      }
+      .modal-head h2 {
+        min-width: 0;
+      }
+      .modal-body {
+        min-height: 0;
+        overflow: auto;
+      }
+      .modal-foot {
+        flex-wrap: wrap;
+      }
+      .modal-body img,
+      .card-body img {
+        max-width: 100%;
+        height: auto;
+      }
+      pre {
+        max-width: 100%;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .activation-screen {
+        min-height: 100dvh;
+        overflow: auto;
+      }
+      .activation-card {
+        margin: auto;
+      }
+
+      @media (max-width: 1700px) {
+        .status-line .session-chip {
+          display: none;
+        }
+      }
+      @media (max-width: 1550px) {
+        .status-line .save-state {
+          display: none;
+        }
+        .context-select {
+          max-width: 132px;
+        }
+        .searchbox {
+          min-width: 120px;
+        }
+      }
+      @media (max-width: 1420px) {
+        .mobile-context-btn {
+          display: grid;
+        }
+        .context-select:nth-of-type(2) {
+          display: none;
+        }
+      }
       @media (max-width: 1180px) {
         .kpi-grid {
           grid-template-columns: repeat(3, 1fr);
@@ -1225,7 +1418,10 @@
         .status-line .sync-state {
           display: none;
         }
-        .context-select:nth-of-type(2) {
+      }
+      @media (max-width: 1100px) {
+        #weekSelect,
+        #campusSelect {
           display: none;
         }
       }
@@ -1277,6 +1473,16 @@
         .content {
           padding: 10px;
         }
+        .page-head {
+          flex-wrap: wrap;
+        }
+        .page-actions {
+          margin-left: 0;
+        }
+        .table-wrap,
+        .score-wrap {
+          max-width: 100%;
+        }
         .kanban {
           grid-template-columns: repeat(4, 260px);
         }
@@ -1296,6 +1502,11 @@
         .folder-pane {
           min-height: auto;
         }
+        .settings-menu,
+        .page-actions,
+        .kanban {
+          scrollbar-width: thin;
+        }
         .sync-summary {
           grid-template-columns: 1fr 1fr;
         }
@@ -1307,13 +1518,13 @@
         .app {
           grid-template-columns: 1fr;
           grid-template-rows: var(--top) minmax(0, 1fr)
-            calc(58px + env(safe-area-inset-bottom));
+            calc(70px + env(safe-area-inset-bottom));
         }
         .sidebar {
           grid-row: 3;
           grid-column: 1;
           width: 100%;
-          height: calc(58px + env(safe-area-inset-bottom));
+          height: calc(70px + env(safe-area-inset-bottom));
           padding-bottom: env(safe-area-inset-bottom);
         }
         .brand,
@@ -1322,15 +1533,33 @@
         }
         .nav {
           display: flex;
-          padding: 4px;
+          padding: 4px 3px;
           overflow-x: auto;
           scroll-snap-type: x proximity;
         }
         .nav button {
-          min-width: 58px;
-          width: 58px;
-          height: 50px;
+          min-width: 112px;
+          width: 112px;
+          height: 62px;
+          flex-direction: column;
+          justify-content: center;
+          gap: 3px;
+          padding: 3px 4px;
           scroll-snap-align: start;
+        }
+        .nav .ico {
+          line-height: 1;
+        }
+        .nav .nav-label {
+          display: block;
+          width: 100%;
+          font-size: 9.5px;
+          line-height: 1.1;
+          text-align: center;
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          overflow-wrap: anywhere;
         }
         .topbar,
         .content {
@@ -1388,6 +1617,9 @@
         .kpi-grid {
           grid-template-columns: 1fr 1fr;
         }
+        .kpi {
+          padding: 9px;
+        }
         .kpi .num {
           font-size: 20px;
         }
@@ -1413,6 +1645,53 @@
         .calendar-grid > div {
           min-height: 70px;
         }
+        .calendar-grid {
+          grid-template-columns: repeat(7, minmax(88px, 1fr));
+          max-width: 100%;
+          overflow-x: auto;
+          scrollbar-width: thin;
+        }
+        .calendar-grid .dow {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+        }
+        .calendar-event,
+        .file-card .file-name {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          overflow-wrap: anywhere;
+        }
+        .toolbar .grow {
+          flex-basis: 100%;
+          width: 100%;
+          min-width: 0;
+        }
+        .toolbar .check-row {
+          align-items: flex-start;
+          white-space: normal;
+        }
+        .compact-list li {
+          align-items: flex-start;
+        }
+        .compact-list strong {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          overflow-wrap: anywhere;
+        }
+        .split {
+          flex-wrap: wrap;
+        }
+        .assistant-answer .split > input {
+          flex: 1 1 190px !important;
+        }
+        .table-wrap,
+        .score-wrap {
+          max-height: none;
+          overflow-y: visible;
+        }
         .modal-layer {
           padding:
             max(5px, env(safe-area-inset-top))
@@ -1421,13 +1700,41 @@
             max(5px, env(safe-area-inset-left));
         }
         .modal-head {
-          position: sticky;
-          top: 0;
+          position: relative;
           background: #fff;
           z-index: 2;
         }
+        .modal {
+          width: 100%;
+          max-height: calc(
+            100dvh - max(10px, env(safe-area-inset-top)) -
+              max(10px, env(safe-area-inset-bottom))
+          );
+          border-radius: 10px;
+        }
+        .modal-head,
+        .modal-body,
+        .modal-foot {
+          padding-left: 11px;
+          padding-right: 11px;
+        }
         .modal-foot {
           padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+        .modal-foot .btn {
+          flex: 1 1 130px;
+          min-width: 0;
+        }
+        .toast-zone {
+          left: max(8px, env(safe-area-inset-left));
+          right: max(8px, env(safe-area-inset-right));
+          bottom: calc(78px + env(safe-area-inset-bottom));
+        }
+        .toast {
+          width: 100%;
+          min-width: 0;
+          max-width: none;
+          overflow-wrap: anywhere;
         }
         .btn,
         .icon-btn,
@@ -1440,6 +1747,22 @@
         }
         .conflict-diff {
           grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 370px) {
+        #yearSelect {
+          display: none;
+        }
+        .content {
+          padding: 8px;
+        }
+        .card-head,
+        .card-body {
+          padding-left: 9px;
+          padding-right: 9px;
+        }
+        .page-head h1 {
+          font-size: 19px;
         }
       }
       @media print {
@@ -2892,7 +3215,7 @@
               error_callback: (error) => this.handlePopupError(error),
             });
           }
-          connectFromUserGesture({ selectAccount = true } = {}) {
+          connectFromUserGesture({ selectAccount = false } = {}) {
             if (!this.isConfigured()) {
               const message =
                 "Chưa cấu hình Google Drive. Hãy tạo app-config.js bằng SETUP_CONFIG.html.";
@@ -2906,6 +3229,10 @@
               );
               return Promise.resolve(false);
             }
+            if (this.hasToken() && this.account) {
+              if (db.db) this.onLocalReady().catch(() => {});
+              return Promise.resolve(true);
+            }
             this.identityBlockedMessage = "";
             if (!this.tokenClient) {
               this.setStatus("connecting", "Đang tải kết nối Google Drive");
@@ -2918,7 +3245,7 @@
             }
             return this.requestAccessToken(selectAccount);
           }
-          requestAccessToken(selectAccount = true) {
+          requestAccessToken(selectAccount = false) {
             if (this.authPromise) return this.authPromise;
             this.setStatus("connecting", "Đang kết nối Google Drive");
             this.authPromise = new Promise((resolve, reject) => {
@@ -4778,7 +5105,7 @@
             status.style.color = "var(--muted)";
             status.textContent = "Đang mở dữ liệu trên thiết bị…";
             const driveAttempt = cloud.connectFromUserGesture({
-              selectAccount: true,
+              selectAccount: false,
             });
             driveAttempt.catch(() => {});
             try {
@@ -5210,12 +5537,35 @@
           }
           return r[key];
         }
+        function sortWeeksAscending(rows) {
+          const getNumber = (row) => {
+            const stored = Number(row?.number),
+              fromName = Number(
+                String(row?.name || "").match(/\d+/)?.[0],
+              );
+            if (Number.isFinite(stored) && stored > 0) return stored;
+            if (Number.isFinite(fromName) && fromName > 0) return fromName;
+            return Number.MAX_SAFE_INTEGER;
+          };
+          return [...rows].sort(
+            (a, b) =>
+              getNumber(a) - getNumber(b) ||
+              String(a.start_date || "").localeCompare(
+                String(b.start_date || ""),
+              ) ||
+              String(a.name || "").localeCompare(String(b.name || ""), "vi", {
+                numeric: true,
+                sensitivity: "base",
+              }),
+          );
+        }
         async function loadContext() {
-          const [years, sems, weeks, campuses] = await Promise.all(
+          const [years, sems, rawWeeks, campuses] = await Promise.all(
             ["school_years", "semesters", "school_weeks", "campuses"].map((s) =>
               db.all(s),
             ),
-          );
+          ),
+            weeks = sortWeeksAscending(rawWeeks);
           state.cache = { years, sems, weeks, campuses };
           state.yearId =
             state.yearId ||
@@ -8484,7 +8834,7 @@
               const button = $("#connectDrive");
               button.disabled = true;
               try {
-                await cloud.connectFromUserGesture({ selectAccount: true });
+                await cloud.connectFromUserGesture({ selectAccount: false });
               } catch (error) {
                 toast(error.message, "bad");
               } finally {
